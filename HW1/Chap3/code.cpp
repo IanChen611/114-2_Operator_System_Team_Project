@@ -83,17 +83,14 @@ Command parse_command(const std::string &line) {
             cmd.run_background = true;
         }
         else if (token == "<") {
-            // TODO
             cmd.has_redirect_in = true;
             iss >> cmd.redirect_in_file;
         }
         else if (token == ">") {
-            // TODO
             cmd.has_redirect_out = true;
             iss >> cmd.redirect_out_file;
         }
         else if (token == "|") {
-            // TODO
             cmd.has_pipe = true;
             while (iss >> token)
                 cmd.pipe_args.push_back(token);
@@ -136,6 +133,29 @@ void execute(const Command &cmd) {
 
     // 3: 子行程
     else if(pid == 0){
+        // 處理輸入重定向
+        if(cmd.has_redirect_in) {
+            int fd = open(cmd.redirect_in_file.c_str(), O_RDONLY);
+            if(fd < 0) {
+                std::cerr << "無法打開輸入文件: " << cmd.redirect_in_file << "\n";
+                exit(1);
+            }
+            dup2(fd, STDIN_FILENO);
+            close(fd);
+        }
+        
+        // 處理輸出重定向
+        if(cmd.has_redirect_out) {
+            int fd = open(cmd.redirect_out_file.c_str(), 
+                         O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if(fd < 0) {
+                std::cerr << "無法打開輸出文件: " << cmd.redirect_out_file << "\n";
+                exit(1);
+            }
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+        
         // - 呼叫 to_argv() 取得 argv
         std::vector<char*> argv = to_argv(cmd.args);
         // - 呼叫 execvp() 執行指令
@@ -156,6 +176,68 @@ void execute(const Command &cmd) {
         else
             std::cout << "[背景執行] PID = " << pid << "\n";
     }
+}
+
+// ==========================================
+// 執行管道指令
+// ==========================================
+void execute_pipe(const Command &cmd) {
+    // 創建管道
+    int fd[2];
+    if(pipe(fd) < 0) {
+        std::cerr << "管道創建失敗!\n";
+        return;
+    }
+    
+    // fork 第一個子行程（左邊的命令）
+    pid_t pid1 = fork();
+    if(pid1 < 0) {
+        std::cerr << "Fork 失敗!\n";
+        exit(1);
+    }
+    
+    if(pid1 == 0) {
+        // 子行程1：執行左邊的命令
+        // 關閉讀端，保留寫端
+        close(fd[0]);
+        // 將 stdout 重定向到管道的寫端
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[1]);
+        
+        std::vector<char*> argv = to_argv(cmd.args);
+        execvp(argv[0], argv.data());
+        std::cerr << "指令不存在: " << cmd.args[0] << "\n";
+        exit(1);
+    }
+    
+    // fork 第二個子行程（右邊的命令）
+    pid_t pid2 = fork();
+    if(pid2 < 0) {
+        std::cerr << "Fork 失敗!\n";
+        exit(1);
+    }
+    
+    if(pid2 == 0) {
+        // 子行程2：執行右邊的命令
+        // 關閉寫端，保留讀端
+        close(fd[1]);
+        // 將 stdin 重定向到管道的讀端
+        dup2(fd[0], STDIN_FILENO);
+        close(fd[0]);
+        
+        std::vector<char*> argv = to_argv(cmd.pipe_args);
+        execvp(argv[0], argv.data());
+        std::cerr << "指令不存在: " << cmd.pipe_args[0] << "\n";
+        exit(1);
+    }
+    
+    // 父行程：關閉兩端的管道
+    close(fd[0]);
+    close(fd[1]);
+    
+    // 等待兩個子行程完成
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
 }
 
 // ==========================================
@@ -203,8 +285,12 @@ int main() {
             continue;
         }
 
-        // 8: 呼叫 execute() 執行指令
-        execute(cmd);
+        // 8: 根據是否有管道，呼叫不同的執行函數
+        if(cmd.has_pipe) {
+            execute_pipe(cmd);
+        } else {
+            execute(cmd);
+        }
     }
 
     return 0;
