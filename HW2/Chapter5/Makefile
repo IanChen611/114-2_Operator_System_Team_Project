@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2 
 TARGET_DIR := .
 TARGET := $(TARGET_DIR)/main.exe
-SOURCES := main.cpp src/process.cpp src/fcfs.cpp
+SOURCES := main.cpp src/*.cpp
 
 .PHONY: all run clean
 

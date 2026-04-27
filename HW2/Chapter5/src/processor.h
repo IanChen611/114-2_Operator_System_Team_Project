@@ -31,7 +31,6 @@ public:
             return;
         }
 
-        std::cout << "Gantt Chart\n";
         const int cellWidth = 8;
 
         for (const auto& segment : result) {
