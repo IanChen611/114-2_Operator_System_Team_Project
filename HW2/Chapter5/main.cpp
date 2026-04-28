@@ -9,6 +9,8 @@
 #include "src/fcfs.h"
 #include "src/sjf.h"
 #include "src/priority.h"
+#include "src/rr.h"
+#include "src/priority_rr.h"
 
 
 int main(){
@@ -42,7 +44,22 @@ int main(){
 	std::cout << "This is Gantt Chart of the Priority_Base algroitm." << std::endl;
 	scheduler_priority.showGanttChart();
     // -----------------------------	
+	std::cout << "==================================================" << std::endl;
 
+	// ---Round_Robin----
+	RR scheduler_rr(processes, 2); // Time Quantum = 2
+	scheduler_rr.startProcess();
+	std::cout << "This is Gantt Chart of the Round_Robin algroitm (Quantum=2)." << std::endl;
+	scheduler_rr.showGanttChart();
+	// -----------------------------
+	std::cout << "==================================================" << std::endl;
+
+	// ---Priority_Round_Robin----
+	PriorityRR scheduler_prr(processes, 2); // Time Quantum = 2
+	scheduler_prr.startProcess();
+	std::cout << "This is Gantt Chart of the Priority_Round_Robin algroitm (Quantum=2)." << std::endl;
+	scheduler_prr.showGanttChart();
+	// -----------------------------
 
 	return 0;
 }
