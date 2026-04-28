@@ -26,9 +26,22 @@ static void print_board(const int (*board)[SIZE]) {
  * implement row validation logic here.
  */
 static int validate_row_placeholder(const int (*board)[SIZE], int row) {
-	(void)board;
-	(void)row;
-	return -1;
+	int seen[SIZE + 1] = {0};
+
+	for (int column = 0; column < SIZE; ++column) {
+		int value = board[row][column];
+
+		if (value < 1 || value > SIZE) {
+			return 0;
+		}
+		if (seen[value]) {
+			return 0;
+		}
+
+		seen[value] = 1;
+	}
+
+	return 1;
 }
 
 /*
@@ -36,19 +49,48 @@ static int validate_row_placeholder(const int (*board)[SIZE], int row) {
  * implement column validation logic here.
  */
 static int validate_column_placeholder(const int (*board)[SIZE], int column) {
-	(void)board;
-	(void)column;
-	return -1;
+	int seen[SIZE + 1] = {0};
+
+	for (int row = 0; row < SIZE; ++row) {
+		int value = board[row][column];
+
+		if (value < 1 || value > SIZE) {
+			return 0;
+		}
+		if (seen[value]) {
+			return 0;
+		}
+
+		seen[value] = 1;
+	}
+
+	return 1;
 }
 
 /*
- * Reserved for the remaining project validation branch.
- * This part is not assigned to Member B.
+ * Validate a 3x3 subgrid.
  */
 static int validate_subgrid_placeholder(const int (*board)[SIZE], int subgrid) {
-	(void)board;
-	(void)subgrid;
-	return -1;
+	int seen[SIZE + 1] = {0};
+	int start_row = (subgrid / 3) * 3;
+	int start_column = (subgrid % 3) * 3;
+
+	for (int row = start_row; row < start_row + 3; ++row) {
+		for (int column = start_column; column < start_column + 3; ++column) {
+			int value = board[row][column];
+
+			if (value < 1 || value > SIZE) {
+				return 0;
+			}
+			if (seen[value]) {
+				return 0;
+			}
+
+			seen[value] = 1;
+		}
+	}
+
+	return 1;
 }
 
 static void *worker(void *arg) {
@@ -64,6 +106,18 @@ static void *worker(void *arg) {
 	}
 
 	thread_args->results[thread_args->type * SIZE + thread_args->index] = result;
+
+	if (thread_args->type == 0) {
+		printf("Thread finished: row %d -> %s\n",
+		       thread_args->index + 1, result == 1 ? "valid" : "invalid");
+	} else if (thread_args->type == 1) {
+		printf("Thread finished: column %d -> %s\n",
+		       thread_args->index + 1, result == 1 ? "valid" : "invalid");
+	} else {
+		printf("Thread finished: subgrid %d -> %s\n",
+		       thread_args->index + 1, result == 1 ? "valid" : "invalid");
+	}
+
 	return NULL;
 }
 
@@ -120,8 +174,7 @@ int main(void) {
 	}
 
 	if (has_pending) {
-		printf("Member B validation logic is still pending in row/column checks.\n");
-		printf("Thread framework and parameter passing are ready.\n");
+		printf("Some validation logic is still pending.\n");
 	} else if (all_valid) {
 		printf("Sudoku solution is valid.\n");
 	} else {
