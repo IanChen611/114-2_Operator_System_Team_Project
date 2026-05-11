@@ -1,0 +1,47 @@
+=== Producer-Consumer Problem ===
+Buffer Size: 5
+Producers: 2, Consumers: 2
+Items per thread: 10
+
+[Producer 0] Produced item: 0
+[Producer 1] Produced item: 100
+[Consumer 0] Consumed item:  0
+[Consumer 1] Consumed item:  100
+[Producer 0] Produced item: 1
+[Producer 1] Produced item: 101
+[Consumer 0] Consumed item:  1
+[Consumer 1] Consumed item:  101
+[Producer 1] Produced item: 102
+[Producer 0] Produced item: 2
+[Producer 1] Produced item: 103
+[Producer 0] Produced item: 3
+[Consumer 0] Consumed item:  102
+[Producer 1] Produced item: 104
+[Consumer 1] Consumed item:  2
+[Producer 0] Produced item: 4
+[Producer 0] Produced item: 5
+[Consumer 1] Consumed item:  103
+[Consumer 0] Consumed item:  3
+[Producer 0] Produced item: 6
+[Producer 1] Produced item: 105
+[Consumer 1] Consumed item:  104
+[Consumer 0] Consumed item:  4
+[Producer 1] Produced item: 106
+[Producer 0] Produced item: 7
+[Consumer 0] Consumed item:  5
+[Consumer 1] Consumed item:  6
+[Producer 0] Produced item: 8
+[Producer 1] Produced item: 107
+[Consumer 1] Consumed item:  105
+[Consumer 0] Consumed item:  106
+[Producer 1] Produced item: 108
+[Producer 0] Produced item: 9
+[Consumer 1] Consumed item:  7
+[Consumer 0] Consumed item:  8
+[Producer 1] Produced item: 109
+[Consumer 1] Consumed item:  107
+[Consumer 0] Consumed item:  108
+[Consumer 1] Consumed item:  9
+[Consumer 0] Consumed item:  109
+
+=== All threads completed ===
